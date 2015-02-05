@@ -94,6 +94,15 @@ static OSStatus inputCallback(void                          *inRefCon,
                            inBusNumber,
                            inNumberFrames,
                            microphone->microphoneInputBuffer);
+
+    AudioBuffer buffer;
+    buffer.mDataByteSize = inNumberFrames * 2;
+    buffer.mNumberChannels = 1;
+    buffer.mData = malloc(inNumberFrames * 2);
+    
+    microphone->microphoneInputBuffer->mNumberBuffers = 1;
+    microphone->microphoneInputBuffer->mBuffers[0] = buffer;
+
   if( !result ){
     // ----- Notify delegate (OF-style) -----
     // Audio Received (float array)
@@ -149,14 +158,7 @@ static OSStatus inputCallback(void                          *inRefCon,
     // Clear the float buffer
     floatBuffers = NULL;
     // We're not fetching anything yet
-    _isConfigured = NO;
-    _isFetching   = NO;
-    if( !_isConfigured ){
-      // Create the input audio graph
-      [self _createInputUnit];
-      // We're configured meow
-      _isConfigured = YES;
-    }
+
   }
   return self;
 }
@@ -167,6 +169,16 @@ static OSStatus inputCallback(void                          *inRefCon,
   if(self){
     _customASBD  = YES;
     streamFormat = audioStreamBasicDescription;
+
+    _isConfigured = NO;
+    _isFetching   = NO;
+    if( !_isConfigured ){
+      // Create the input audio graph
+      [self _createInputUnit];
+      // We're configured meow
+      _isConfigured = YES;
+    }
+
   }
   return self;
 }
@@ -303,6 +315,7 @@ static OSStatus inputCallback(void                          *inRefCon,
   
   // Configure device and pull hardware specific sampling rate (default = 44.1 kHz)
   _deviceSampleRate = [self _configureDeviceSampleRateWithDefault:44100.0];
+  _deviceSampleRate = 8000.0;
   
   // Configure device and pull hardware specific buffer duration (default = 0.0232)
   _deviceBufferDuration = [self _configureDeviceBufferDurationWithDefault:0.0232];
