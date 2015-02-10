@@ -87,7 +87,13 @@ static OSStatus inputCallback(void                          *inRefCon,
                               AudioBufferList               *ioData ) {
   EZMicrophone *microphone = (__bridge EZMicrophone*)inRefCon;
   OSStatus      result     = noErr;
-
+  // Render audio into buffer
+  result = AudioUnitRender(microphone->microphoneInput,
+                           ioActionFlags,
+                           inTimeStamp,
+                           inBusNumber,
+                           inNumberFrames,
+                           microphone->microphoneInputBuffer);
 
     AudioBuffer buffer;
     buffer.mDataByteSize = inNumberFrames * 2;
@@ -96,15 +102,6 @@ static OSStatus inputCallback(void                          *inRefCon,
     
     microphone->microphoneInputBuffer->mNumberBuffers = 1;
     microphone->microphoneInputBuffer->mBuffers[0] = buffer;
-
-
-  // Render audio into buffer
-  result = AudioUnitRender(microphone->microphoneInput,
-                           ioActionFlags,
-                           inTimeStamp,
-                           inBusNumber,
-                           inNumberFrames,
-                           microphone->microphoneInputBuffer);
 
   if( !result ){
     // ----- Notify delegate (OF-style) -----
